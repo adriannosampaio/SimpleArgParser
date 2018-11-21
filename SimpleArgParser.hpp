@@ -9,8 +9,6 @@
 #include <map>
 #include <sstream>
 
-#define DEBUG
-
 #if defined(DEBUG)
 #   define LOG(MSG) std::cout << MSG << std::endl
 #   define LOG_VAR(V) std::cout << #V << " = " << V << std::endl
@@ -22,6 +20,56 @@
 
 namespace parser
 {
+
+    /** Exception thrown when there's a parsing error
+    *   during runtime. It inherits from std::runtime_error.
+    *   Its message explains which argument is unexpected, 
+    *   as well as the correct usage
+    */
+    class parsing_exception : public std::runtime_error{
+    
+    protected:
+        /** Usage of the command-line arguments
+        *
+        */
+        const std::string usage;
+
+    public:
+
+        /** Basic constructor for const string
+        *
+        *   @param msg
+        *       Message explaining the error found
+        *
+        *   @param usage
+        *       Usage of the command-line arguments
+        *
+        */
+        parsing_exception(
+            const std::string& msg,
+            const std::string& usage) :
+            std::runtime_error(msg)
+        { }
+
+
+        /** Basic constructor for const char*
+        *
+        *   @param msg
+        *       Message explaining the error found
+        *
+        *   @param usage
+        *       Usage of the command-line arguments
+        *
+        */
+        parsing_exception(
+            const char* msg,
+            const char* usage) :
+            std::runtime_error(msg)
+        { }
+
+    };
+
+
     /** Class responsible for parsing the command-line
     *   input arguments. It receives the raw input data
     *   and then parse it, returning a map
@@ -153,34 +201,42 @@ namespace parser
         /** Prints instructions of the program to the
         *   terminal
         */
-        void usage() const
+        std::string usage() const
         {
-            std::cout << "  Usage:\n    ";
-            std::cout << this->_programName << " ";
+            std::stringstream ss;
+
+
+            ss << "  Usage:\n    ";
+            ss << this->_programName << " ";
             for(auto&& arg : this->_argumentList)
             {
-                std::cout<< "[ " << arg.first << " ";
+                ss<< "[ " << arg.first << " ";
                 if(arg.second.hasValue)
                 {
-                    std::cout << "val";
+                    ss << "val";
                 }
-                std::cout << "]  ";
+                ss << "]  ";
             }
-            std::cout << "\n\n";
+            ss << "\n\n";
 
             for(auto&& arg : this->_argumentList)
             {
                 if(!arg.second.description.empty())
                 {
-                    std::cout<< "    [ " << arg.first << " ";
+                    ss<< "    [ " << arg.first << " ";
                     if(arg.second.hasValue)
                     {
-                        std::cout << "val";
+                        ss << "val";
                     }
-                    std::cout << "] => " << arg.second.description << std::cout << "\n\n";
+                    ss << "] => " 
+                              << arg.second.description 
+                              << "\n\n";
                 }
             }
-            std::cout << "\n\n";
+            
+            ss << "\n\n";
+
+            return ss.str();
         }
 
         /** Parses the raw command-line input and
@@ -199,11 +255,8 @@ namespace parser
                 {
                     if(argument != this->_argumentList.end())
                     {
-                        LOG("found input argument");
-                        LOG_VAR(currentArg);
                         if(argument->second.hasValue)
                         {
-                            LOG("requires value");
                             state = ARG_VALUE;
                             name = argument->first;
                         }
@@ -212,8 +265,18 @@ namespace parser
                     }
                     else
                     {
-                        this->usage();
-                        exit(0);
+                        std::stringstream msg;
+                        msg << "Argument '"
+                            << currentArg
+                            << "' not expected."
+                            << "\n";
+
+                        parser::parsing_exception error(
+                            msg.str(),
+                            this->usage()
+                            );
+
+                        throw error;
                     }
                 }
                 else if(state == ARG_VALUE)
@@ -239,6 +302,7 @@ namespace parser
         bool isDefined(const std::string& argName) const
         {
             auto& args = this->_parsedArguments;
+            std::cerr << args.find(argName)->second << std::endl; 
             return args.find(argName) != args.end();
         }
 
@@ -265,6 +329,7 @@ namespace parser
             return ret;
         }
 
+        // TODO: Add check for correct datatype format
         /** Retrieve the argument value
         *
         *   @param [in] argName
