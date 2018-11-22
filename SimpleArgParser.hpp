@@ -32,7 +32,7 @@ namespace parser
         /** Usage of the command-line arguments
         *
         */
-        const std::string usage;
+        const std::string _usage;
 
     public:
 
@@ -46,9 +46,10 @@ namespace parser
         *
         */
         parsing_exception(
-            const std::string& msg,
-            const std::string& usage) :
-            std::runtime_error(msg)
+            const std::string& _msg,
+            const std::string& _usage) :
+            std::runtime_error(_msg),
+            _usage(_usage)
         { }
 
 
@@ -62,11 +63,28 @@ namespace parser
         *
         */
         parsing_exception(
-            const char* msg,
-            const char* usage) :
-            std::runtime_error(msg)
+            const char* _msg,
+            const char* _usage) :
+            std::runtime_error(_msg),
+            _usage(_usage)
         { }
 
+        /** Returns the usage of the CLI. This string
+        *   is here to make our lives easier
+        */
+        std::string usage() const
+        {
+            return this->_usage;
+        }
+
+
+        std::string message()
+        {
+            std::string msg = this->what();
+            msg += "\n";
+            msg += this->_usage;
+            return msg;
+        }
     };
 
 

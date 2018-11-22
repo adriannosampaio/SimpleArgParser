@@ -2,6 +2,36 @@
 #include "catch2/catch.hpp"
 #include "../SimpleArgParser.hpp"
 
+
+TEST_CASE("Testing wrong value")
+{
+    
+    SECTION("Flag defined via command line"){
+        
+        /// Test no value argument (--debug)
+        int argc = 2;
+
+        char *argv[] = {
+            "program",
+            "--debun"
+        };
+        
+        // Creating the parser instance
+        parser::ArgumentParser argParser(argc, argv);
+
+        // Including a new argument to parse via command line
+        argParser.addArgument(
+            "--debug", 
+            false, 
+            "for debug messages");
+
+
+        REQUIRE_THROWS_AS(argParser.parse(), parser::parsing_exception);        
+
+    }
+}
+
+
 TEST_CASE("Testing expected flag with no value")
 {
     
