@@ -208,12 +208,12 @@ namespace parser
             LOG_VAR(argData.description);
             this->_argumentList[name] = argData;
 
-            for(auto&& arg : this->_argumentList)
-            {
-                LOG_VAR(arg.first);
-                LOG_VAR(arg.second.hasValue);
-                LOG_VAR(arg.second.description);
-            }
+            //for(auto&& arg : this->_argumentList)
+            //{
+            //    LOG_VAR(arg.first);
+            //    LOG_VAR(arg.second.hasValue);
+            //    LOG_VAR(arg.second.description);
+            //}
         }
 
         /** Prints instructions of the program to the
@@ -320,7 +320,7 @@ namespace parser
         bool isDefined(const std::string& argName) const
         {
             auto& args = this->_parsedArguments;
-            std::cerr << args.find(argName)->second << std::endl; 
+            //std::cerr << args.find(argName)->second << std::endl; 
             return args.find(argName) != args.end();
         }
 
